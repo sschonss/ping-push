@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AuthService } from '../services/auth';
 import {
   StyleSheet,
   Text,
@@ -7,6 +8,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
@@ -20,7 +22,7 @@ type RootStackParamList = {
 type CreateAccountScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateAccount'>;
 
 export default function CreateAccountScreen() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation<CreateAccountScreenNavigationProp>();
@@ -32,17 +34,23 @@ export default function CreateAccountScreen() {
     return null;
   }
 
-  const handleCreateAccount = () => {
-    if (!username || !password || !confirmPassword) {
-      alert('Please fill in all fields');
-      return;
+  const handleCreateAccount = async () => {
+    try {
+      if (!email || !password || !confirmPassword) {
+        Alert.alert('Error', 'Please fill in all fields');
+        return;
+      }
+      if (password !== confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return;
+      }
+
+      await AuthService.signUp(email, password);
+      Alert.alert('Success', 'Account created successfully');
+      navigation.navigate('Login');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'An error occurred during sign up');
     }
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-    // TODO: Implement account creation logic
-    navigation.goBack();
   };
 
   return (
@@ -54,13 +62,17 @@ export default function CreateAccountScreen() {
         <Text style={styles.title}>Ping Push</Text>
         
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>username</Text>
+          <Text style={styles.label}>email</Text>
           <TextInput
             style={styles.input}
-            value={username}
-            onChangeText={setUsername}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter email"
+            placeholderTextColor="#666"
             autoCapitalize="none"
             autoCorrect={false}
+            keyboardType="email-address"
+            autoComplete="email"
           />
         </View>
 

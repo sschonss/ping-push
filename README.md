@@ -57,9 +57,9 @@ Link para o protótipo no Figma: [Protótipo do Ping Push](https://www.figma.com
 
 ## Modelagem do Banco
 
-O Ping Push utiliza MongoDB como banco de dados NoSQL para armazenar os dados da aplicação. Abaixo estão os schemas das coleções utilizadas:
+O Ping Push utiliza Firebase como banco de dados NoSQL para armazenar os dados da aplicação. Abaixo estão os schemas das coleções utilizadas:
 
-### Schemas do MongoDB
+### Schemas do Firebase
 
 ```javascript
 // Collection: users

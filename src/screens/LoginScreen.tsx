@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AuthService } from '../services/auth';
 import {
   View,
   Text,
@@ -6,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { useNavigation } from '@react-navigation/native';
@@ -22,7 +24,7 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, '
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation<LoginScreenNavigationProp>();
 
@@ -42,14 +44,16 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.formContainer}>
-        <Text style={styles.label}>username</Text>
+        <Text style={styles.label}>email</Text>
         <TextInput
           style={styles.input}
-          value={username}
-          onChangeText={setUsername}
-          placeholder="Enter username"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Enter email"
           placeholderTextColor="#666"
           autoCapitalize="none"
+          keyboardType="email-address"
+          autoComplete="email"
         />
 
         <Text style={styles.label}>password</Text>
@@ -62,7 +66,20 @@ export default function LoginScreen() {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Home')}>
+        <TouchableOpacity 
+          style={styles.loginButton} 
+          onPress={async () => {
+            try {
+              if (!email || !password) {
+                Alert.alert('Error', 'Please fill in all fields');
+                return;
+              }
+              await AuthService.signIn(email, password);
+              navigation.navigate('Home');
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'An error occurred during login');
+            }
+          }}>
           <Text style={styles.loginButtonText}>LOGIN</Text>
         </TouchableOpacity>
 

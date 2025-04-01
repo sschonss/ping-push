@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
+  Alert,
   TouchableOpacity,
   ScrollView,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { useNavigation } from '@react-navigation/native';
@@ -15,40 +17,76 @@ import { Feather } from '@expo/vector-icons';
 type RootStackParamList = {
   Home: undefined;
   CreateTopic: undefined;
-  TopicDetails: { topicId: string };
+  InfoTopic: { topicId: string };
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
-interface Topic {
-  id: string;
-  name: string;
-}
-
-// Temporary mock data for topics
-const mockTopics: Topic[] = [
-  { id: '1', name: 'general' },
-  { id: '2', name: 'announcements' },
-  { id: '3', name: 'help' },
-  { id: '4', name: 'random' },
-  { id: '5', name: 'events' },
-  { id: '6', name: 'feedback' },
-];
+import { Topic } from '../types';
+import { TopicsService } from '../services/topics';
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(true);
   const [fontsLoaded] = useFonts({
     PressStart2P_400Regular,
   });
+
+  useEffect(() => {
+    const unsubscribeTopics = TopicsService.subscribeToTopics((updatedTopics) => {
+      setTopics(updatedTopics);
+      setLoading(false);
+    });
+
+    return () => {
+      unsubscribeTopics();
+    };
+  }, []);
+
+
 
   if (!fontsLoaded) {
     return null;
   }
 
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text style={[styles.loadingText, { fontFamily: 'PressStart2P_400Regular' }]}>
+            Loading topics...
+          </Text>
+        </View>
+      );
+    }
+
+    if (topics.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyText, { fontFamily: 'PressStart2P_400Regular' }]}>
+            No topics yet
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={topics}
+        renderItem={renderTopicItem}
+        keyExtractor={(item) => item.id}
+        style={styles.topicList}
+        contentContainerStyle={styles.topicListContent}
+      />
+    );
+  };
+
   const renderTopicItem = ({ item }: { item: Topic }) => (
     <TouchableOpacity
       style={styles.topicItem}
-      onPress={() => navigation.navigate('TopicDetails', { topicId: item.id })}
+      onPress={() => navigation.navigate('InfoTopic', { topicId: item.id })}
     >
       <Text style={styles.topicText}>{item.name}</Text>
       <Feather name="chevron-right" size={24} color="#000000" />
@@ -62,13 +100,7 @@ export default function HomeScreen() {
         <Text style={styles.subtitleText}>topics</Text>
       </View>
 
-      <FlatList
-        data={mockTopics}
-        renderItem={renderTopicItem}
-        keyExtractor={(item) => item.id}
-        style={styles.topicList}
-        contentContainerStyle={styles.topicListContent}
-      />
+      {renderContent()}
 
       <TouchableOpacity
         style={styles.createButton}
@@ -81,6 +113,29 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    color: '#ffffff',
+    marginTop: 20,
+    textAlign: 'center',
+    fontSize: 12,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  emptyText: {
+    color: '#ffffff',
+    textAlign: 'center',
+    fontSize: 12,
+  },
   container: {
     flex: 1,
     backgroundColor: '#000000',
