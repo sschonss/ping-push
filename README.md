@@ -1,4 +1,4 @@
-![Logo do Ping Push](/doc/logo/logo-h.svg)
+![Logo do Ping Push](/docs/logo/logo-h.svg)
 
 ## Sobre o app:
 
@@ -33,33 +33,33 @@ Link para o protótipo no Figma: [Protótipo do Ping Push](https://www.figma.com
 
 ## Imagens:
 
-![Logo do Ping Push](/doc/logo/logo-h.svg)
+![Logo do Ping Push](/docs/logo/logo-h.svg)
 
 ### 1. Tela de Login
 
-![Tela de Login](/doc/screens/login.png)
+![Tela de Login](/docs/screens/login.png)
 
 ### 2. Tela de Criar Conta
 
-![Tela de Criar Conta](/doc/screens/create-account.png)
+![Tela de Criar Conta](/docs/screens/create-account.png)
 
 ### 3. Tela Home
 
-![Tela Home](/doc/screens/home.png)
+![Tela Home](/docs/screens/home.png)
 
 ### 4. Tela do Tópico
 
-![Tela do Tópico](/doc/screens/topic.png)
+![Tela do Tópico](/docs/screens/topic.png)
 
 ### 5. Tela de Criar Tópico
 
-![Tela de Criar Tópico](/doc/screens/create-topic.png)
+![Tela de Criar Tópico](/docs/screens/create-topic.png)
 
 ## Modelagem do Banco
 
-O Ping Push utiliza MongoDB como banco de dados NoSQL para armazenar os dados da aplicação. Abaixo estão os schemas das coleções utilizadas:
+O Ping Push utiliza Firebase como banco de dados NoSQL para armazenar os dados da aplicação. Abaixo estão os schemas das coleções utilizadas:
 
-### Schemas do MongoDB
+### Schemas do Firebase
 
 ```javascript
 // Collection: users
