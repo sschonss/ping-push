@@ -8,7 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { TopicsService } from '../services/topics';
 import { serverTimestamp } from 'firebase/firestore';
@@ -16,7 +16,7 @@ import { serverTimestamp } from 'firebase/firestore';
 export default function CreateTopicScreen() {
   const [topicName, setTopicName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigation();
+
 
   const [fontsLoaded] = useFonts({
     PressStart2P_400Regular,
@@ -37,7 +37,7 @@ export default function CreateTopicScreen() {
 
       const topicId = await TopicsService.addTopic(newTopic);
       if (topicId) {
-        navigation.navigate('Home' as never);
+        router.replace('/home');
       } else {
         Alert.alert('Error', 'Failed to create topic');
       }
@@ -85,7 +85,7 @@ export default function CreateTopicScreen() {
 
         <TouchableOpacity 
           style={styles.cancelButton} 
-          onPress={() => navigation.goBack()}
+          onPress={() => router.back()}
         >
           <Text style={styles.cancelButtonText}>cancel</Text>
         </TouchableOpacity>

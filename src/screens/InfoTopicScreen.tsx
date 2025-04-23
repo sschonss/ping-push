@@ -8,14 +8,7 @@ import {
   Clipboard,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-type RootStackParamList = {
-  InfoTopic: { topicId: string };
-};
-
-type InfoTopicRouteProp = RouteProp<RootStackParamList, 'InfoTopic'>;
+import { router, useLocalSearchParams } from 'expo-router';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { TopicsService } from '../services/topics';
 import { Topic } from '../types';
@@ -27,8 +20,7 @@ export default function InfoTopicScreen() {
   const [subscriptionToken, setSubscriptionToken] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
-  const navigation = useNavigation();
-  const route = useRoute<InfoTopicRouteProp>();
+  const { topicId } = useLocalSearchParams<{ topicId: string }>();
 
   const [fontsLoaded] = useFonts({
     PressStart2P_400Regular,
@@ -36,7 +28,7 @@ export default function InfoTopicScreen() {
 
   useEffect(() => {
     const unsubscribeTopics = TopicsService.subscribeToTopics((topics) => {
-      const topicId = route.params?.topicId;
+
       if (topicId) {
         const foundTopic = topics.find(t => t.id === topicId);
         if (foundTopic) {
@@ -53,7 +45,7 @@ export default function InfoTopicScreen() {
     return () => {
       unsubscribeTopics();
     };
-  }, [route.params?.topicId]);
+  }, [topicId]);
 
   useEffect(() => {
     if (topic) {
@@ -84,7 +76,7 @@ export default function InfoTopicScreen() {
               try {
                 setIsDeleting(true);
                 await TopicsService.deleteTopic(topic.id);
-                navigation.goBack();
+                router.back();
               } catch (error) {
                 Alert.alert('Error', 'Failed to delete topic. Please try again.');
               } finally {
@@ -125,7 +117,7 @@ export default function InfoTopicScreen() {
         </Text>
         <TouchableOpacity 
           style={styles.backButtonLink}
-          onPress={() => navigation.goBack()}
+          onPress={() => router.back()}
         >
           <Text style={[styles.backButtonText, { fontFamily: 'PressStart2P_400Regular' }]}>
             ← Back to Home
@@ -166,7 +158,7 @@ export default function InfoTopicScreen() {
         )}
 
         <TouchableOpacity 
-          onPress={() => navigation.goBack()}
+          onPress={() => router.back()}
           style={styles.backButtonLink}
         >
           <Text style={styles.backButtonText}>← Back to Home</Text>

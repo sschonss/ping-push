@@ -10,22 +10,14 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-type RootStackParamList = {
-  Login: undefined;
-  CreateAccount: undefined;
-};
-
-type CreateAccountScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateAccount'>;
+import { router } from 'expo-router';
 
 export default function CreateAccountScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const navigation = useNavigation<CreateAccountScreenNavigationProp>();
+
   const [fontsLoaded] = useFonts({
     PressStart2P_400Regular,
   });
@@ -47,7 +39,7 @@ export default function CreateAccountScreen() {
 
       await AuthService.signUp(email, password);
       Alert.alert('Success', 'Account created successfully');
-      navigation.navigate('Login');
+      router.replace('/login');
     } catch (error: any) {
       Alert.alert('Error', error.message || 'An error occurred during sign up');
     }
