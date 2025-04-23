@@ -10,23 +10,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
-
-type RootStackParamList = {
-  Home: undefined;
-  CreateTopic: undefined;
-  InfoTopic: { topicId: string };
-};
-
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+import { router } from 'expo-router';
 
 import { Topic } from '../types';
 import { TopicsService } from '../services/topics';
 
 export default function HomeScreen() {
-  const navigation = useNavigation<HomeScreenNavigationProp>();
+
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [fontsLoaded] = useFonts({
@@ -86,7 +77,7 @@ export default function HomeScreen() {
   const renderTopicItem = ({ item }: { item: Topic }) => (
     <TouchableOpacity
       style={styles.topicItem}
-      onPress={() => navigation.navigate('InfoTopic', { topicId: item.id })}
+      onPress={() => router.push(`/info-topic?topicId=${item.id}`)}
     >
       <Text style={styles.topicText}>{item.name}</Text>
       <Feather name="chevron-right" size={24} color="#000000" />
@@ -104,7 +95,7 @@ export default function HomeScreen() {
 
       <TouchableOpacity
         style={styles.createButton}
-        onPress={() => navigation.navigate('CreateTopic')}
+        onPress={() => router.push('/create-topic')}
       >
         <Text style={styles.createButtonText}>Create Topic</Text>
       </TouchableOpacity>

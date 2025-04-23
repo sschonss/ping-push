@@ -10,23 +10,14 @@ import {
   Alert,
 } from 'react-native';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-type RootStackParamList = {
-  Login: undefined;
-  CreateAccount: undefined;
-  Home: undefined;
-};
-
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigation = useNavigation<LoginScreenNavigationProp>();
+
 
   const [fontsLoaded] = useFonts({
     PressStart2P_400Regular,
@@ -75,7 +66,7 @@ export default function LoginScreen() {
                 return;
               }
               await AuthService.signIn(email, password);
-              navigation.navigate('Home');
+              router.replace('/home');
             } catch (error: any) {
               Alert.alert('Error', error.message || 'An error occurred during login');
             }
@@ -83,7 +74,7 @@ export default function LoginScreen() {
           <Text style={styles.loginButtonText}>LOGIN</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('CreateAccount')} style={styles.createAccountContainer}>
+        <TouchableOpacity onPress={() => router.push('/create-account')} style={styles.createAccountContainer}>
           <Text style={styles.createAccountText}>create account</Text>
         </TouchableOpacity>
       </View>
