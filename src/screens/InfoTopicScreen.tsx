@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Clipboard,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
+import { Timestamp } from 'firebase/firestore';
+
+// Services & Types
 import { TopicsService } from '../services/topics';
 import { Topic } from '../types';
-import { Timestamp } from 'firebase/firestore';
+
+// Components
+import { Screen } from '../components/layout/Screen';
+import { TopicDetails } from '../components/common/TopicDetails';
+import { TopicSubscription } from '../components/common/TopicSubscription';
+import { Button } from '../components/ui/Button';
+import { DeleteButton } from '../components/ui/DeleteButton';
 
 export default function InfoTopicScreen() {
   const [topic, setTopic] = useState<Topic | null>(null);
@@ -28,7 +29,6 @@ export default function InfoTopicScreen() {
 
   useEffect(() => {
     const unsubscribeTopics = TopicsService.subscribeToTopics((topics) => {
-
       if (topicId) {
         const foundTopic = topics.find(t => t.id === topicId);
         if (foundTopic) {
@@ -89,9 +89,8 @@ export default function InfoTopicScreen() {
     );
   };
 
-  const handleCopyToken = () => {
-    Clipboard.setString(subscriptionToken);
-    Alert.alert('Success', 'Token copied to clipboard!');
+  const handleBackToHome = () => {
+    router.back();
   };
 
   if (!fontsLoaded) {
@@ -100,91 +99,84 @@ export default function InfoTopicScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text style={[styles.loadingText, { fontFamily: 'PressStart2P_400Regular' }]}>
-          Loading topic...
-        </Text>
-      </View>
+      <Screen style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text style={styles.loadingText}>
+            Loading topic...
+          </Text>
+        </View>
+      </Screen>
     );
   }
 
   if (!topic) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={[styles.errorText, { fontFamily: 'PressStart2P_400Regular' }]}>
-          Topic not found
-        </Text>
-        <TouchableOpacity 
-          style={styles.backButtonLink}
-          onPress={() => router.back()}
-        >
-          <Text style={[styles.backButtonText, { fontFamily: 'PressStart2P_400Regular' }]}>
-            ← Back to Home
+      <Screen style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
+            Topic not found
           </Text>
-        </TouchableOpacity>
-      </View>
+          <Button 
+            title="← Back to Home"
+            onPress={handleBackToHome}
+            variant="outline"
+            style={styles.backButton}
+          />
+        </View>
+      </Screen>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <Screen style={styles.container}>
       <View style={styles.titleContainer}>
         <Text style={styles.titleText}>TOPIC</Text>
         <Text style={styles.titleText}>INFO</Text>
       </View>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.label}>name</Text>
-        <Text style={styles.value}>{topic.name}</Text>
+      <View style={styles.content}>
+        <TopicDetails topic={topic} />
 
-        <Text style={styles.label}>created at</Text>
-        <Text style={styles.value}>
-          {(topic.createdAt instanceof Timestamp ? topic.createdAt.toDate() : new Date(topic.createdAt)).toLocaleDateString()}
-        </Text>
+        <TopicSubscription 
+          topic={topic}
+          isSubscribed={subscribed}
+          subscriptionToken={subscriptionToken}
+          onSubscribe={handleSubscribe}
+        />
 
-        {!subscribed ? (
-          <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
-            <Text style={styles.subscribeButtonText}>SUBSCRIBE</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.tokenContainer}>
-            <Text style={styles.label}>your token</Text>
-            <Text style={styles.tokenText}>{subscriptionToken}</Text>
-            <TouchableOpacity style={styles.copyButton} onPress={handleCopyToken}>
-              <Text style={styles.copyButtonText}>COPY TOKEN</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <Button 
+          title="← Back to Home"
+          onPress={handleBackToHome}
+          variant="outline"
+          style={styles.backButton}
+          textStyle={styles.backButtonText}
+        />
 
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          style={styles.backButtonLink}
-        >
-          <Text style={styles.backButtonText}>← Back to Home</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.deleteButton} 
+        <DeleteButton 
+          title="DELETE TOPIC"
           onPress={handleDelete}
-        >
-          <Text style={styles.deleteButtonText}>DELETE TOPIC</Text>
-        </TouchableOpacity>
+          loading={isDeleting}
+          disabled={isDeleting}
+        />
       </View>
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-
-  loadingContainer: {
+  container: {
     flex: 1,
     backgroundColor: '#000000',
-    padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
   loadingText: {
+    fontFamily: 'PressStart2P_400Regular',
     color: '#ffffff',
     marginTop: 20,
     fontSize: 12,
@@ -192,27 +184,21 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     flex: 1,
-    backgroundColor: '#000000',
-    padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
   errorText: {
+    fontFamily: 'PressStart2P_400Regular',
     color: '#ffffff',
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
   },
-
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-    padding: 20,
-  },
   titleContainer: {
     alignItems: 'center',
-    marginTop: 80,
-    marginBottom: 60,
+    marginTop: 60,
+    marginBottom: 40,
   },
   titleText: {
     fontFamily: 'PressStart2P_400Regular',
@@ -223,91 +209,21 @@ const styles = StyleSheet.create({
     textShadowRadius: 1,
     marginVertical: 5,
   },
-  infoContainer: {
+  content: {
     width: '100%',
-    alignItems: 'flex-start',
+    flex: 1,
+    paddingHorizontal: 20,
   },
-  label: {
-    fontFamily: 'PressStart2P_400Regular',
-    fontSize: 14,
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  value: {
-    fontFamily: 'PressStart2P_400Regular',
-    fontSize: 16,
-    color: '#D3D3D3',
-    marginBottom: 24,
-  },
-  subscribeButton: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  subscribeButtonText: {
-    fontFamily: 'PressStart2P_400Regular',
-    fontSize: 16,
-    color: '#000000',
-  },
-  tokenContainer: {
-    width: '100%',
-    marginTop: 20,
-  },
-  tokenText: {
-    fontFamily: 'PressStart2P_400Regular',
-    fontSize: 12,
-    color: '#D3D3D3',
-    backgroundColor: '#1A1A1A',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  copyButton: {
-    width: '100%',
-    height: 40,
-    backgroundColor: '#333333',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  copyButtonText: {
-    fontFamily: 'PressStart2P_400Regular',
-    fontSize: 12,
-    color: '#FFFFFF',
-  },
-  backButtonLink: {
-    marginTop: 40,
-    marginBottom: 20,
+  backButton: {
+    marginTop: 30,
+    marginBottom: 10,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   },
   backButtonText: {
     fontFamily: 'PressStart2P_400Regular',
     fontSize: 12,
     color: '#FFFFFF',
     textDecorationLine: 'underline',
-  },
-  deleteButton: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#FF0000',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-    shadowColor: '#FF0000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-  },
-  deleteButtonText: {
-    fontFamily: 'PressStart2P_400Regular',
-    fontSize: 16,
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 1,
   },
 });
